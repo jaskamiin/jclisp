@@ -1,1 +1,3 @@
 # jclisp
+
+Scheme implementation in C for practice...
