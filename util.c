@@ -97,3 +97,30 @@ tokenize(char* exp)
 	t->elements = j;
 	return t;
 }
+
+
+/*
+*	Take arbitrary size input from specified stream (stdin, usually) and store
+*	in a dynamically reallocated string, which is returned as the result.
+*/
+char* 
+input(FILE* in, size_t size)
+{
+	char* str = NULL;
+	int c;
+	size_t len = 0;
+	
+	str = (char*)realloc(str, size);
+	if (!str) return str;
+
+	while ((c=fgetc(in)) != EOF && c != '\n'){
+		str[len++] = c;
+		if (len == size){
+			str = (char*)realloc(str, size += 16);
+			if (!str) return str;
+		}
+	}
+	str[len++] = '\0';
+
+	return (char*)realloc(str, len);
+}

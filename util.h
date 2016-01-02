@@ -11,6 +11,7 @@ struct token_data {
 	char** array;
 };
 
+char* input(FILE*, size_t);
 double stone (char*);
 struct token_data* prep_token_data(unsigned);
 struct token_data* tokenize(char*);

@@ -1,36 +1,23 @@
 #include "util.h"
 
-char* input(FILE*, size_t);
+/*Function declarations*/
 void repl();
-void eval();
 
-int main(){
+
+/*Main*/
+int main()
+{
 	fprintf(stdout, "JLisp 0.1 Scheme Interpreter\n");
 	repl();
 	return 0;
 }
 
-char* input(FILE* in, size_t size){
-	char* str = NULL;
-	int c;
-	size_t len = 0;
-	
-	str = (char*)realloc(str, size);
-	if (!str) return str;
 
-	while ((c=fgetc(in)) != EOF && c != '\n'){
-		str[len++] = c;
-		if (len == size){
-			str = (char*)realloc(str, size += 16);
-			if (!str) return str;
-		}
-	}
-	str[len++] = '\0';
+/*Function Definitions*/
 
-	return (char*)realloc(str, len);
-}
-
-void repl(){
+void 
+repl()
+{
 	short quit = 0;
 	char* line;
 	struct token_data* t;
@@ -39,7 +26,12 @@ void repl(){
 	while (!quit){
 		fprintf(stdout, ">>>");
 		line = input(stdin, 10);
-		if (strcmp(line, "") != 0){
+
+		if ((strcmp(line, "quit")) == 0 || (strcmp(line, "exit") == 0))
+			break;
+		
+		else if (strcmp(line, ""))
+		{
 			//does not freeing this every time cause a memory leak? crashes when I try.
 			t = tokenize(line);
 
