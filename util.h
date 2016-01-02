@@ -1,8 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 struct token_data {
 	unsigned elements;

@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#define PBUFF  	2048
-#define DEBUG	0
+#include "util.h"
 
 char* input(FILE*, size_t);
 void repl();

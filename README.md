@@ -1,3 +1,5 @@
 # jclisp
 
-Scheme implementation in C for practice...
+Scheme implementation in C. 
+
+##TODO:
