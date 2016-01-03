@@ -26,10 +26,14 @@ struct type_data{
 	};
 };
 
-char* input(FILE*, size_t);
-double stone (char*);
+char* 	input (FILE*, size_t);
+double 	stone (char*);
+short 	isNumber (char*);
+short 	isDecimal (char*);
+
 struct token_data* prep_token_data(unsigned);
 struct token_data* tokenize(char*);
+
 void parse(struct token_data*);
 
 #endif

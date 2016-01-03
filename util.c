@@ -13,6 +13,26 @@ stone (char* _s0)
 }
 
 
+
+/*	
+*	Tests to see if either the token starts with a digit or negative sign. If 
+*	a negative sign, it then checks if the next digit is a digit. 
+*
+*	TODO: Not very clean. Maybe find a better way to implement this.
+*/
+short
+isNumber (char* _s0)
+{
+	return ( (isdigit(_s0[0])) || ((_s0[0] == '-') && (isdigit(_s0[1]))) ) ? 1:0;
+}
+
+
+short
+isDecimal (char* _s0)
+{
+	return (strchr(_s0, '.') == NULL) ? 0 : 1;
+}
+
 /*
 *	Return a token structure with a 2D square array, dimension equal to input.
 *
@@ -125,11 +145,22 @@ input(FILE* in, size_t size)
 	return (char*)realloc(str, len);
 }
 
-void parse(struct token_data* tokens){
-	size_t i, tok_len;
+void 
+parse(struct token_data* tokens)
+{
+	size_t i, tok_len, esIdx, osIdx;
 	unsigned numToks = tokens->elements;
 
+	struct type_data exprStack[(const unsigned) numToks];
+	struct type_data opstack[(const unsigned) numToks];
+
+	esIdx = osIdx = 0;
+
 	for (i = 0; i < numToks; ++i){
-		
+		if ( tokens->array[i][0] == '(' ){
+
+		} else if ( isNumber(tokens->array[i]) ){
+			if ()
+		}
 	}
 }
