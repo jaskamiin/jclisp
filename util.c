@@ -151,6 +151,13 @@ input(FILE* in, size_t size)
 }
 
 
+/*
+*	Create abstract syntax tree from token list. 
+*
+*	TODO:
+*		- determine what return type should be
+*		- only handles token being a number so far.
+*/
 void 
 parse(struct token_data* tokens)
 {
@@ -168,7 +175,7 @@ parse(struct token_data* tokens)
 		if ( tokens->array[i][0] == '(' ){
 
 		} else if ( isNumber(tokens->array[i]) ){
-			
+
 			if (isDecimal(tokens->array[i])){
 				exprStack[esIdx].type = REAL;
 				exprStack[esIdx].real = (double) stone(tokens->array[i]);
