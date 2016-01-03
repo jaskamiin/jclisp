@@ -23,7 +23,12 @@ stone (char* _s0)
 short
 isNumber (char* _s0)
 {
-	return ( (isdigit(_s0[0])) || ((_s0[0] == '-') && (isdigit(_s0[1]))) ) ? 1:0;
+	short f1, f2;
+
+	f1 = isdigit(_s0[0]);
+	f2 = ( _s0[0] =='-' && isdigit(_s0[1]) );
+
+	return f1 && f2 ? 1 : 0; 
 }
 
 
@@ -145,6 +150,7 @@ input(FILE* in, size_t size)
 	return (char*)realloc(str, len);
 }
 
+
 void 
 parse(struct token_data* tokens)
 {
@@ -156,11 +162,22 @@ parse(struct token_data* tokens)
 
 	esIdx = osIdx = 0;
 
-	for (i = 0; i < numToks; ++i){
+	for (i = 0; i < numToks; ++i)
+	{
+
 		if ( tokens->array[i][0] == '(' ){
 
 		} else if ( isNumber(tokens->array[i]) ){
-			if ()
+			
+			if (isDecimal(tokens->array[i])){
+				exprStack[esIdx].type = REAL;
+				exprStack[esIdx].real = (double) stone(tokens->array[i]);
+			} else {
+				exprStack[esIdx].type = INT;
+				exprStack[esIdx].integer = (int) stone(tokens->array[i]);				
+			}
+
 		}
+
 	}
 }
