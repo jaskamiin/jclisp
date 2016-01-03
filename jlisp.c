@@ -13,7 +13,7 @@ int main()
 }
 
 
-/*Function Definitions*/
+/*REPL -- main loop*/
 
 void 
 repl()

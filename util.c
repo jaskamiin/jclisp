@@ -124,3 +124,12 @@ input(FILE* in, size_t size)
 
 	return (char*)realloc(str, len);
 }
+
+void parse(struct token_data* tokens){
+	size_t i, tok_len;
+	unsigned numToks = tokens->elements;
+
+	for (i = 0; i < numToks; ++i){
+		
+	}
+}
