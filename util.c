@@ -165,7 +165,7 @@ parse(struct token_data* tokens)
 	unsigned numToks = tokens->elements;
 
 	struct type_data exprStack[(const unsigned) numToks];
-	struct type_data opstack[(const unsigned) numToks];
+	struct type_data opStack[(const unsigned) numToks];
 
 	esIdx = osIdx = 0;
 
@@ -173,6 +173,10 @@ parse(struct token_data* tokens)
 	{
 
 		if ( tokens->array[i][0] == '(' ){
+
+			opStack[osIdx].type = OPERATOR;
+			opStack[osIdx].operator = '(';
+			osIdx++;
 
 		} else if ( isNumber(tokens->array[i]) ){
 
@@ -183,6 +187,12 @@ parse(struct token_data* tokens)
 				exprStack[esIdx].type = INT;
 				exprStack[esIdx].integer = (int) stone(tokens->array[i]);				
 			}
+
+			esIdx++;
+
+		} else if () {
+
+			
 
 		}
 
