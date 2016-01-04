@@ -8,6 +8,8 @@
 
 
 typedef enum { INT, REAL, CHAR, STRING, KEYWORD, OPERATOR } var_type;
+typedef enum { LTR, RTL } order;
+typedef enum { MUL = 3, DIV = 3, ADD = 4, SUB = 4 } precedence;
 
 struct token_data {
 	unsigned elements;
@@ -15,7 +17,8 @@ struct token_data {
 };
 
 struct type_data{
-	var_type type; 
+	var_type type;
+	precedence prec;
 	union {
 		int    	integer;
 		double 	real;
