@@ -6,17 +6,20 @@
 #include <stdio.h>
 #include <string.h>
 
+enum bool { true, false };
 
 typedef enum { INT, REAL, CHAR, STRING, KEYWORD, OPERATOR } var_type;
 typedef enum { LTR, RTL } order;
 typedef enum { PAR = 0, FUN = 1, MUL = 3, DIV = 3, ADD = 4, SUB = 4 } precedence;
 
-struct token_data {
+struct token_data 
+{
 	unsigned elements;
 	char** array;
 };
 
-struct type_data{
+struct type_data
+{
 	var_type type;
 	order ord;
 	precedence prec;
@@ -34,13 +37,6 @@ char* 	input (FILE*, size_t);
 double 	stone (char*);
 short 	isNumber (char*);
 short 	isDecimal (char*);
-
-/*
-void 	evaluate(int, int, char);
-void 	evaluate(double, double, char);
-void 	evaluate(int, double, char);
-void 	evaluate(double, int, char);
-*/
 
 struct 	token_data* prep_token_data(unsigned);
 struct 	token_data* tokenize(char*);

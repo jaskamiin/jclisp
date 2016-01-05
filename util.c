@@ -265,21 +265,28 @@ parse(struct token_data* tokens)
 			/*This part is a really clumsy glue-job. Will fix later 
 			* when I can think about it for a longer time. I'm quite
 			* ashamed of the poor style, actually. Oops.*/
-			while (currTok.prec < opStack[osIdx].prec){
-				struct type_data _e1, _e2;
+			while (currTok.prec < opStack[osIdx].prec)
+			{
+				struct type_data _e1, _e2, result;
+				enum bool isDouble1, isDouble2;
+				char 	op;
+				double 	_d1, _d2;
 
-				double 	_d1, _d2, result;
-				result = 0;
+				_e1 		= opStack[osIdx];
+				_e2 		= opStack[osIdx-1];
+				op 			= currTok.operator;
+				result 		= 0;
 
-				_e1 = opStack[osIdx];
-				_e2 = opStack[osIdx-1];
-
-				switch (_e1.type){
+				/*Get type of first operand*/
+				switch (_e1.type)
+				{
 					case REAL:
 						_d1 = _e1.real;
+						isDouble1 = true;
 						break;
 					case INT:
 						_d1 = _e1.integer;
+						isDouble1 = false;
 						break;
 					case STRING:
 					case OPERATOR:
@@ -288,12 +295,16 @@ parse(struct token_data* tokens)
 						break;
 				}
 
-				switch(_e2.type){
+				/*Get type of second operand*/
+				switch(_e2.type)
+				{
 					case REAL:
 						_d2 = _e1.real;
+						isDouble2 = true;
 						break;
 					case INT:
 						_d2 = _e2.integer;
+						isDouble2 = false;
 						break;
 					case STRING:
 					case OPERATOR:
@@ -302,22 +313,48 @@ parse(struct token_data* tokens)
 						break;
 				}
 
-				/*If neither value is a double, the result is an integer*/
-				if ( (sizeof(_d1) == sizeof(double)) || (sizeof(_d2) == sizeof(double)) ){ 
+				/*If one of the operands is a double, so is the result*/
+				if ( double1 || double2 )
+				{ 
+					result.type = REAL;
 
-					char op = currTok.operator;
-					switch (op) {
+					switch (op) 
+					{
 						case '+':
+							result = _d1 + _d2;
 							break;
 						case '-':
+							result = _d1 - _d2;
 							break;
 						case '*':
+							result = _d1 * _d2;
 							break;
 						case '/':
+							if (_d2 != 0)
+								result = _d1 / _d2;
 							break;
 					}
+
 				} else { 
-					_r1 = 0;
+					result.type = INT;
+
+					switch (op) 
+					{
+						case '+':
+							result = (int)(_d1 + _d2);
+							break;
+						case '-':
+							result = (int)(_d1 - _d2);
+							break;
+						case '*':
+							result = (int)(_d1 * _d2);
+							break;
+						case '/':
+							if (_d2 != 0)
+								result = (int)(_d1 / _d2);
+							break;
+					}
+
 				}
 
 			}
