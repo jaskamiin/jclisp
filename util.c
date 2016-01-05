@@ -268,12 +268,8 @@ parse(struct token_data* tokens)
 			while (currTok.prec < opStack[osIdx].prec){
 				struct type_data _e1, _e2;
 
-				int 	_i1, _i2, _r1;
-				double 	_d1, _d2, _r2;
-
-				_i1 = _i2 = *(int*) NULL;
-				_d1 = _d2 = *(double*) NULL;
-				_r1 = _r2 = *(double*) NULL;
+				double 	_d1, _d2, result;
+				result = 0;
 
 				_e1 = opStack[osIdx];
 				_e2 = opStack[osIdx-1];
@@ -283,7 +279,7 @@ parse(struct token_data* tokens)
 						_d1 = _e1.real;
 						break;
 					case INT:
-						_i1 = _e1.integer;
+						_d1 = _e1.integer;
 						break;
 					case STRING:
 					case OPERATOR:
@@ -297,7 +293,7 @@ parse(struct token_data* tokens)
 						_d2 = _e1.real;
 						break;
 					case INT:
-						_i2 = _e2.integer;
+						_d2 = _e2.integer;
 						break;
 					case STRING:
 					case OPERATOR:
@@ -307,40 +303,21 @@ parse(struct token_data* tokens)
 				}
 
 				/*If neither value is a double, the result is an integer*/
-				if (_d1 != *(double*)NULL || _d2 != *(double*)NULL){ 
-					_r2 = 0;
+				if ( (sizeof(_d1) == sizeof(double)) || (sizeof(_d2) == sizeof(double)) ){ 
 
 					char op = currTok.operator;
 					switch (op) {
-						case '+':									
-							if (_d1 != *(double*)NULL) _r2 += (double)_d1;
-							if (_d2 != *(double*)NULL) _r2 += (double)_d2;
-							if (_i1 != *(int*)NULL) _r2 += (double)_i1;
-							if (_i2 != *(int*)NULL) _r2 += (double)_i2;
+						case '+':
 							break;
-						case '-':									
-							if (_d1 != *(double*)NULL) _r2 -= (double)_d1;
-							if (_d2 != *(double*)NULL) _r2 -= (double)_d2;
-							if (_i1 != *(int*)NULL) _r2 -= (double)_i1;
-							if (_i2 != *(int*)NULL) _r2 -= (double)_i2;
+						case '-':
 							break;
-						case '*':									
-							if (_d1 != *(double*)NULL) _r2 *= (double)_d1;
-							if (_d2 != *(double*)NULL) _r2 *= (double)_d2;
-							if (_i1 != *(int*)NULL) _r2 *= (double)_i1;
-							if (_i2 != *(int*)NULL) _r2 *= (double)_i2;
+						case '*':
 							break;
-						case '/':									
-							if (_d1 != *(double*)NULL) _r2 /= (double)_d1;
-							if (_d2 != *(double*)NULL) _r2 /= (double)_d2;
-							if (_i1 != *(int*)NULL) _r2 /= (double)_i1;
-							if (_i2 != *(int*)NULL) _r2 /= (double)_i2;
+						case '/':
 							break;
 					}
 				} else { 
 					_r1 = 0;
-					_r1 += _i1;
-					_r1 += _i2;
 				}
 
 			}
