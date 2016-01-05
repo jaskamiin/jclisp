@@ -32,11 +32,39 @@ isNumber (char* _s0)
 }
 
 
+/*	
+*	Used after a token is confirmed to be a number - checks for fractional part 
+*/
 short
 isDecimal (char* _s0)
 {
 	return (strchr(_s0, '.') == NULL) ? 0 : 1;
 }
+
+
+/*	
+*	Tests if the keyword is either a unary or boolean operator or function name 
+*
+*	TODO: Not very clean. Maybe find a better way to implement this.
+*/
+short
+isOperatorOrFunctionKeyword(char* _s0){
+	char token;
+	unsigned len = strlen(_s0);
+
+	if (len == 1){
+		token = _s0[0];
+		if (token == '*') return MUL;
+		if (token == '/') return DIV;
+		if (token == '+') return ADD;
+		if (token == '-') return SUB;
+	} else {
+		return FUN;
+	}
+
+	return 0;
+}
+
 
 /*
 *	Return a token structure with a 2D square array, dimension equal to input.
@@ -163,6 +191,7 @@ parse(struct token_data* tokens)
 {
 	size_t i, tok_len, esIdx, osIdx;
 	unsigned numToks = tokens->elements;
+	short opType;
 
 	struct type_data exprStack[(const unsigned) numToks];
 	struct type_data opStack[(const unsigned) numToks];
@@ -190,9 +219,9 @@ parse(struct token_data* tokens)
 
 			esIdx++;
 
-		} else if () {
+		} else if ((opType = (short)isOperatorOrFunctionKeyword(tokens->array[i])) != 0) {
 
-			
+
 
 		}
 
