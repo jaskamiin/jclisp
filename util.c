@@ -48,18 +48,19 @@ isDecimal (char* _s0)
 *	TODO: Not very clean. Maybe find a better way to implement this.
 */
 short
-isOperatorOrFunctionKeyword(char* _s0){
+isOperatorOrFunctionKeyword(char* _s0)
+{
 	char token;
 	unsigned len = strlen(_s0);
 
 	if (len == 1){
 		token = _s0[0];
-		if (token == '*') return MUL;
-		if (token == '/') return DIV;
-		if (token == '+') return ADD;
-		if (token == '-') return SUB;
+		if (token == '*') return 1;
+		if (token == '/') return 2;
+		if (token == '+') return 3;
+		if (token == '-') return 4;
 	} else {
-		return FUN;
+		return 5;
 	}
 
 	return 0;
@@ -204,6 +205,7 @@ parse(struct token_data* tokens)
 		if ( tokens->array[i][0] == '(' ){
 
 			opStack[osIdx].type = OPERATOR;
+			opStack[osIdx].prec = PAR;
 			opStack[osIdx].operator = '(';
 			osIdx++;
 
@@ -220,6 +222,44 @@ parse(struct token_data* tokens)
 			esIdx++;
 
 		} else if ((opType = (short)isOperatorOrFunctionKeyword(tokens->array[i])) != 0) {
+
+			struct type_data currTok;
+
+			switch (opType){
+				case 1: // mul
+					currTok.operator = '*';
+					currTok.prec = MUL;
+					currTok.ord = LTR;
+					break;
+				case 2: //div
+					currTok.operator = '/';
+					currTok.prec = DIV;
+					currTok.ord = LTR;
+					break;
+				case 3: //add
+					currTok.operator = '+';
+					currTok.prec = ADD;
+					currTok.ord = LTR;
+					break;
+				case 4: //sub
+					currTok.operator = '-';
+					currTok.prec = SUB;
+					currTok.ord = LTR;
+					break;
+				case 5: //function
+				{
+					size_t _t = sizeof(tokens->array[i]);
+					if (_t > 254){
+						strncpy(currTok.keyword, tokens->array[i], 254);
+						currTok.keyword[255] = '\0';
+					} else {
+						strncpy(currTok.keyword, tokens->array[i], _t);
+					}
+					currTok.prec = FUN;
+					currTok.ord = RTL;
+					break;
+				}
+			}
 
 
 
