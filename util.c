@@ -204,6 +204,7 @@ parse(struct token_data* tokens)
 	{
 
 		if ( tokens->array[i][0] == '(' ){
+			printf("Token is %c.\n", tokens->array[i][0]);
 
 			opStack[osIdx].type = OPERATOR;
 			opStack[osIdx].prec = PAR;
@@ -275,7 +276,6 @@ parse(struct token_data* tokens)
 				_e1 		= opStack[osIdx];
 				_e2 		= opStack[osIdx-1];
 				op 			= currTok.operator;
-				result 		= 0;
 
 				/*Get type of first operand*/
 				switch (_e1.type)
@@ -314,24 +314,24 @@ parse(struct token_data* tokens)
 				}
 
 				/*If one of the operands is a double, so is the result*/
-				if ( double1 || double2 )
+				if ( isDouble1 || isDouble2 )
 				{ 
 					result.type = REAL;
 
 					switch (op) 
 					{
 						case '+':
-							result = _d1 + _d2;
+							result.real = _d1 + _d2;
 							break;
 						case '-':
-							result = _d1 - _d2;
+							result.real = _d1 - _d2;
 							break;
 						case '*':
-							result = _d1 * _d2;
+							result.real = _d1 * _d2;
 							break;
 						case '/':
 							if (_d2 != 0)
-								result = _d1 / _d2;
+								result.real = _d1 / _d2;
 							break;
 					}
 
@@ -341,23 +341,27 @@ parse(struct token_data* tokens)
 					switch (op) 
 					{
 						case '+':
-							result = (int)(_d1 + _d2);
+							result.integer = (int)(_d1 + _d2);
 							break;
 						case '-':
-							result = (int)(_d1 - _d2);
+							result.integer = (int)(_d1 - _d2);
 							break;
 						case '*':
-							result = (int)(_d1 * _d2);
+							result.integer = (int)(_d1 * _d2);
 							break;
 						case '/':
 							if (_d2 != 0)
-								result = (int)(_d1 / _d2);
+								result.integer = (int)(_d1 / _d2);
 							break;
 					}
-
 				}
 
+				exprStack[esIdx++] = result;
 			}
+
+			opStack[osIdx++] = currTok;
+
+		} else if (tokens->array[i][0] == ')') {
 
 		}
 

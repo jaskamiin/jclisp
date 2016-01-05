@@ -41,6 +41,8 @@ repl()
 				if (i < t->elements-1) printf(", ");
 			}
 			printf("]\n");
+
+			parse(t);
 		}
 	}
 
