@@ -35,6 +35,13 @@ double 	stone (char*);
 short 	isNumber (char*);
 short 	isDecimal (char*);
 
+/*
+void 	evaluate(int, int, char);
+void 	evaluate(double, double, char);
+void 	evaluate(int, double, char);
+void 	evaluate(double, int, char);
+*/
+
 struct 	token_data* prep_token_data(unsigned);
 struct 	token_data* tokenize(char*);
 

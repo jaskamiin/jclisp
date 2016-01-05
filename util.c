@@ -261,7 +261,9 @@ parse(struct token_data* tokens)
 				}
 			}
 
+			while (currTok.prec < opStack[osIdx].prec){
 
+			}
 
 		}
 
