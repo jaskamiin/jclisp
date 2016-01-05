@@ -185,7 +185,8 @@ input(FILE* in, size_t size)
 *
 *	TODO:
 *		- determine what return type should be
-*		- only handles token being a number so far.
+*		- needs to evaluate function keywords
+*		- handle division by 0 error
 */
 void 
 parse(struct token_data* tokens)
@@ -261,7 +262,86 @@ parse(struct token_data* tokens)
 				}
 			}
 
+			/*This part is a really clumsy glue-job. Will fix later 
+			* when I can think about it for a longer time. I'm quite
+			* ashamed of the poor style, actually. Oops.*/
 			while (currTok.prec < opStack[osIdx].prec){
+				struct type_data _e1, _e2;
+
+				int 	_i1, _i2, _r1;
+				double 	_d1, _d2, _r2;
+
+				_i1 = _i2 = *(int*) NULL;
+				_d1 = _d2 = *(double*) NULL;
+				_r1 = _r2 = *(double*) NULL;
+
+				_e1 = opStack[osIdx];
+				_e2 = opStack[osIdx-1];
+
+				switch (_e1.type){
+					case REAL:
+						_d1 = _e1.real;
+						break;
+					case INT:
+						_i1 = _e1.integer;
+						break;
+					case STRING:
+					case OPERATOR:
+					case CHAR:
+					case KEYWORD:
+						break;
+				}
+
+				switch(_e2.type){
+					case REAL:
+						_d2 = _e1.real;
+						break;
+					case INT:
+						_i2 = _e2.integer;
+						break;
+					case STRING:
+					case OPERATOR:
+					case CHAR:
+					case KEYWORD:
+						break;
+				}
+
+				/*If neither value is a double, the result is an integer*/
+				if (_d1 != *(double*)NULL || _d2 != *(double*)NULL){ 
+					_r2 = 0;
+
+					char op = currTok.operator;
+					switch (op) {
+						case '+':									
+							if (_d1 != *(double*)NULL) _r2 += (double)_d1;
+							if (_d2 != *(double*)NULL) _r2 += (double)_d2;
+							if (_i1 != *(int*)NULL) _r2 += (double)_i1;
+							if (_i2 != *(int*)NULL) _r2 += (double)_i2;
+							break;
+						case '-':									
+							if (_d1 != *(double*)NULL) _r2 -= (double)_d1;
+							if (_d2 != *(double*)NULL) _r2 -= (double)_d2;
+							if (_i1 != *(int*)NULL) _r2 -= (double)_i1;
+							if (_i2 != *(int*)NULL) _r2 -= (double)_i2;
+							break;
+						case '*':									
+							if (_d1 != *(double*)NULL) _r2 *= (double)_d1;
+							if (_d2 != *(double*)NULL) _r2 *= (double)_d2;
+							if (_i1 != *(int*)NULL) _r2 *= (double)_i1;
+							if (_i2 != *(int*)NULL) _r2 *= (double)_i2;
+							break;
+						case '/':									
+							if (_d1 != *(double*)NULL) _r2 /= (double)_d1;
+							if (_d2 != *(double*)NULL) _r2 /= (double)_d2;
+							if (_i1 != *(int*)NULL) _r2 /= (double)_i1;
+							if (_i2 != *(int*)NULL) _r2 /= (double)_i2;
+							break;
+					}
+				} else { 
+					_r1 = 0;
+					_r1 += _i1;
+					_r1 += _i2;
+				}
 
 			}
 
