@@ -1,5 +1,5 @@
 # jclisp
 
-Scheme implementation in C. 
+##Status -- not working. 
 
-##TODO:
+jclisp is a simple implementation of the Scheme dialect of LISP. So far, it operates mainly as a "calculator", in that it can

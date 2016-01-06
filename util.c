@@ -28,7 +28,7 @@ isNumber (char* _s0)
 	f1 = isdigit(_s0[0]);
 	f2 = ( _s0[0] =='-' && isdigit(_s0[1]) );
 
-	return f1 && f2 ? 1 : 0; 
+	return f1 || f2 ? 1 : 0; 
 }
 
 
@@ -202,16 +202,18 @@ parse(struct token_data* tokens)
 
 	for (i = 0; i < numToks; ++i)
 	{
-
+		printf("Token is %s.\n", tokens->array[i]);
 		if ( tokens->array[i][0] == '(' ){
-			printf("Token is %c.\n", tokens->array[i][0]);
-
+			printf("Token is open parentheses. adding to opStack.\n");
 			opStack[osIdx].type = OPERATOR;
 			opStack[osIdx].prec = PAR;
 			opStack[osIdx].operator = '(';
+			printf("opStack[%i] added: %c. ", osIdx, opStack[osIdx].operator);
 			osIdx++;
+			printf("opStack now at %i\n", osIdx);
 
 		} else if ( isNumber(tokens->array[i]) ){
+			printf("Token is a number %s. adding to expStack.\n", tokens->array[i]);
 
 			if (isDecimal(tokens->array[i])){
 				exprStack[esIdx].type = REAL;
@@ -224,32 +226,37 @@ parse(struct token_data* tokens)
 			esIdx++;
 
 		} else if ((opType = (short)isOperatorOrFunctionKeyword(tokens->array[i])) != 0) {
-
+			printf("Token is an operator: %s. Determining operator type.\n", tokens->array[i]);
 			struct type_data currTok;
 
 			switch (opType){
 				case 1: // mul
+					printf("Operator is multiplication.\n");
 					currTok.operator = '*';
 					currTok.prec = MUL;
 					currTok.ord = LTR;
 					break;
 				case 2: //div
+					printf("Operator is division.\n");
 					currTok.operator = '/';
 					currTok.prec = DIV;
 					currTok.ord = LTR;
 					break;
 				case 3: //add
+					printf("Operator is addition.\n");
 					currTok.operator = '+';
 					currTok.prec = ADD;
 					currTok.ord = LTR;
 					break;
 				case 4: //sub
+					printf("Operator is subtraction.\n");
 					currTok.operator = '-';
 					currTok.prec = SUB;
 					currTok.ord = LTR;
 					break;
 				case 5: //function
 				{
+					printf("Operator is a function keyword.\n");
 					size_t _t = sizeof(tokens->array[i]);
 					if (_t > 254){
 						strncpy(currTok.keyword, tokens->array[i], 254);
@@ -263,28 +270,35 @@ parse(struct token_data* tokens)
 				}
 			}
 
+
 			/*This part is a really clumsy glue-job. Will fix later 
 			* when I can think about it for a longer time. I'm quite
 			* ashamed of the poor style, actually. Oops.*/
-			while (currTok.prec < opStack[osIdx].prec)
+			printf("comparing opStack[%i] = %c precedence: %i", osIdx-1, opStack[osIdx-1].operator, opStack[osIdx-1].prec);
+			printf(" with currTok = %c precedence: %i\n", currTok.operator, currTok.prec);
+			while (currTok.prec < opStack[osIdx-1].prec)
 			{
+				printf("Token %c precedence is %i -- current opStack %c precedence is %i\n", currTok.operator, currTok.prec, opStack[osIdx-1].operator, opStack[osIdx-1].prec);
+
 				struct type_data _e1, _e2, result;
 				enum bool isDouble1, isDouble2;
 				char 	op;
 				double 	_d1, _d2;
 
-				_e1 		= opStack[osIdx];
-				_e2 		= opStack[osIdx-1];
+				_e1 		= opStack[osIdx-1];
+				_e2 		= opStack[osIdx-2];
 				op 			= currTok.operator;
 
 				/*Get type of first operand*/
 				switch (_e1.type)
 				{
 					case REAL:
+						printf("Operand 1 is real\n");
 						_d1 = _e1.real;
 						isDouble1 = true;
 						break;
 					case INT:
+						printf("Operand 1 is integer\n");
 						_d1 = _e1.integer;
 						isDouble1 = false;
 						break;
@@ -299,10 +313,12 @@ parse(struct token_data* tokens)
 				switch(_e2.type)
 				{
 					case REAL:
+						printf("Operand 2 is real\n");
 						_d2 = _e1.real;
 						isDouble2 = true;
 						break;
 					case INT:
+						printf("Operand 2 is integer\n");
 						_d2 = _e2.integer;
 						isDouble2 = false;
 						break;
