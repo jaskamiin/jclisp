@@ -68,6 +68,33 @@ isOperatorOrFunctionKeyword(char* _s0)
 
 
 /*
+*	Take arbitrary size input from specified stream (stdin, usually) and store
+*	in a dynamically reallocated string, which is returned as the result.
+*/
+char* 
+input(FILE* in, size_t size)
+{
+	char* str = NULL;
+	int c;
+	size_t len = 0;
+	
+	str = (char*)realloc(str, size);
+	if (!str) return str;
+
+	while ((c=fgetc(in)) != EOF && c != '\n'){
+		str[len++] = c;
+		if (len == size){
+			str = (char*)realloc(str, size += 16);
+			if (!str) return str;
+		}
+	}
+	str[len++] = '\0';
+
+	return (char*)realloc(str, len);
+}
+
+
+/*
 *	Return a token structure with a 2D square array, dimension equal to input.
 *
 *	Since for an input of length N, there will be x <= N tokens, each with
@@ -99,7 +126,8 @@ prep_token_data(unsigned N)
 *	parentheses and operators, numbers, and keywords (proc names, vars, etc).
 *	Whitespace is ignored.
 *	
-*	TODO: Nothing
+*	TODO: 
+*		- Make sure changes from var operator are reflected here.
 */
 struct token_data* 
 tokenize(char* exp)
@@ -154,60 +182,41 @@ tokenize(char* exp)
 
 
 /*
-*	Take arbitrary size input from specified stream (stdin, usually) and store
-*	in a dynamically reallocated string, which is returned as the result.
-*/
-char* 
-input(FILE* in, size_t size)
-{
-	char* str = NULL;
-	int c;
-	size_t len = 0;
-	
-	str = (char*)realloc(str, size);
-	if (!str) return str;
-
-	while ((c=fgetc(in)) != EOF && c != '\n'){
-		str[len++] = c;
-		if (len == size){
-			str = (char*)realloc(str, size += 16);
-			if (!str) return str;
-		}
-	}
-	str[len++] = '\0';
-
-	return (char*)realloc(str, len);
-}
-
-
-/*
 *	Create abstract syntax tree from token list. 
 *
 *	TODO:
 *		- determine what return type should be
 *		- needs to evaluate function keywords
 *		- handle division by 0 error
+*		- move evaluation to its own function
 */
 void 
 parse(struct token_data* tokens)
 {
-	size_t i, tok_len, esIdx, osIdx;
-	unsigned numToks = tokens->elements;
-	short opType;
+	size_t 			*osIdx, *esIdx;
+	unsigned 		tokenCount;
+	struct stack 	exprStack;
+	struct stack 	opStack;
 
-	struct type_data exprStack[(const unsigned) numToks];
-	struct type_data opStack[(const unsigned) numToks];
+	tokenCount 		= tokens->elements;
+	exprStack.data 	= (struct var*) malloc (tokenCount * sizeof(struct var));
+	opStack.data 	= (struct var*) malloc (tokenCount * sizeof(struct var));
+	esIdx 			= &exprStack.idx;
+	osIdx 			= &opStack.idx;
 
 	esIdx = osIdx = 0;
 
-	for (i = 0; i < numToks; ++i)
+	size_t 	i;
+	short 	opType;
+	for (i = 0; i < tokenCount; ++i)
 	{
 		printf("Token is %s.\n", tokens->array[i]);
 		if ( tokens->array[i][0] == '(' ){
 			printf("Token is open parentheses. adding to opStack.\n");
 			opStack[osIdx].type = OPERATOR;
-			opStack[osIdx].prec = PAR;
-			opStack[osIdx].operator = '(';
+			opStack[osIdx].precedence = PAR;
+			opStack[osIdx].operator = "(\0";
+
 			printf("opStack[%i] added: %c. ", osIdx, opStack[osIdx].operator);
 			osIdx++;
 			printf("opStack now at %i\n", osIdx);
@@ -227,32 +236,32 @@ parse(struct token_data* tokens)
 
 		} else if ((opType = (short)isOperatorOrFunctionKeyword(tokens->array[i])) != 0) {
 			printf("Token is an operator: %s. Determining operator type.\n", tokens->array[i]);
-			struct type_data currTok;
+			struct var currTok;
 
 			switch (opType){
 				case 1: // mul
 					printf("Operator is multiplication.\n");
-					currTok.operator = '*';
-					currTok.prec = MUL;
-					currTok.ord = LTR;
+					currTok.operator = "*";
+					currTok.precedence = MUL;
+					currTok.order = LTR;
 					break;
 				case 2: //div
 					printf("Operator is division.\n");
-					currTok.operator = '/';
-					currTok.prec = DIV;
-					currTok.ord = LTR;
+					currTok.operator = "/";
+					currTok.precedence = DIV;
+					currTok.order = LTR;
 					break;
 				case 3: //add
 					printf("Operator is addition.\n");
-					currTok.operator = '+';
-					currTok.prec = ADD;
-					currTok.ord = LTR;
+					currTok.operator = "+";
+					currTok.precedence = ADD;
+					currTok.order = LTR;
 					break;
 				case 4: //sub
 					printf("Operator is subtraction.\n");
-					currTok.operator = '-';
-					currTok.prec = SUB;
-					currTok.ord = LTR;
+					currTok.operator = "-";
+					currTok.precedence = SUB;
+					currTok.order = LTR;
 					break;
 				case 5: //function
 				{
@@ -264,8 +273,8 @@ parse(struct token_data* tokens)
 					} else {
 						strncpy(currTok.keyword, tokens->array[i], _t);
 					}
-					currTok.prec = FUN;
-					currTok.ord = RTL;
+					currTok.precedence = FUN;
+					currTok.order = RTL;
 					break;
 				}
 			}
@@ -274,15 +283,15 @@ parse(struct token_data* tokens)
 			/*This part is a really clumsy glue-job. Will fix later 
 			* when I can think about it for a longer time. I'm quite
 			* ashamed of the poor style, actually. Oops.*/
-			printf("comparing opStack[%i] = %c precedence: %i", osIdx-1, opStack[osIdx-1].operator, opStack[osIdx-1].prec);
-			printf(" with currTok = %c precedence: %i\n", currTok.operator, currTok.prec);
-			while (currTok.prec < opStack[osIdx-1].prec)
+			printf("comparing opStack[%i] = %c precedence: %i", osIdx-1, opStack[osIdx-1].operator, opStack[osIdx-1].precedence);
+			printf(" with currTok = %c precedence: %i\n", currTok.operator, currTok.precedence);
+			while (currTok.precedence < opStack[osIdx-1].precedence)
 			{
-				printf("Token %c precedence is %i -- current opStack %c precedence is %i\n", currTok.operator, currTok.prec, opStack[osIdx-1].operator, opStack[osIdx-1].prec);
+				printf("Token %c precedence is %i -- current opStack %c precedence is %i\n", currTok.operator, currTok.precedence, opStack[osIdx-1].operator, opStack[osIdx-1].precedence);
 
-				struct type_data _e1, _e2, result;
+				struct var _e1, _e2, result;
 				enum bool isDouble1, isDouble2;
-				char 	op;
+				char* 	op;
 				double 	_d1, _d2;
 
 				_e1 		= opStack[osIdx-1];
@@ -378,8 +387,25 @@ parse(struct token_data* tokens)
 			opStack[osIdx++] = currTok;
 
 		} else if (tokens->array[i][0] == ')') {
+			double e1, e2;
+			while (opStack[osIdx].operator != "("){
+				switch (opStack[osIdx].type){
+					case REAL:
+						e1 = 
+						break;
+					case INT:
+						break;
+					case KEYWORD:
+					case STRING:
+					case CHAR:
+						break;	
+				}
+			}
 
 		}
 
 	}
+
+	free (exprStack.data);
+	free (opStack.data);
 }

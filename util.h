@@ -9,8 +9,9 @@
 enum bool { true, false };
 
 typedef enum { INT, REAL, CHAR, STRING, KEYWORD, OPERATOR } var_type;
-typedef enum { LTR, RTL } order;
-typedef enum { PAR = 0, FUN = 1, MUL = 3, DIV = 3, ADD = 4, SUB = 4 } precedence;
+typedef enum { LTR, RTL } var_order;
+typedef enum { PAR = 0, FUN = 1, MUL = 3, DIV = 3, ADD = 4, SUB = 4 } var_precedence;
+
 
 struct token_data 
 {
@@ -18,20 +19,27 @@ struct token_data
 	char** array;
 };
 
-struct type_data
+/*TODO: merge keyword and operator into one*/
+struct var
 {
 	var_type type;
-	order ord;
-	precedence prec;
+	var_order order;
+	var_precedence precedence;
 	union {
 		int    	integer;
 		double 	real;
 		char 	character;
 		char* 	string;
-		char 	keyword[255];
-		char 	operator;
+		char 	operator[255];
 	};
 };
+
+struct stack
+{
+	size_t idx;
+	struct var* data;
+};
+
 
 char* 	input (FILE*, size_t);
 double 	stone (char*);
@@ -42,5 +50,6 @@ struct 	token_data* prep_token_data(unsigned);
 struct 	token_data* tokenize(char*);
 
 void 	parse(struct token_data*);
+
 
 #endif
