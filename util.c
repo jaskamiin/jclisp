@@ -50,17 +50,16 @@ isDecimal (char* _s0)
 short
 isOperatorOrFunctionKeyword(char* _s0)
 {
-	char token;
 	unsigned len = strlen(_s0);
 
 	if (len == 1){
-		token = _s0[0];
-		if (token == '*') return 1;
-		if (token == '/') return 2;
-		if (token == '+') return 3;
-		if (token == '-') return 4;
+		char token = _s0[0];
+		if (token == '*') return 1;	//MUL
+		if (token == '/') return 2;	//DIV
+		if (token == '+') return 3;	//ADD
+		if (token == '-') return 4;	//SUB
 	} else {
-		return 5;
+		return 5; //FUNCTION
 	}
 
 	return 0;
@@ -193,7 +192,6 @@ tokenize(char* exp)
 void 
 parse(struct token_data* tokens)
 {
-	size_t 			*osIdx, *esIdx;
 	unsigned 		tokenCount;
 	struct stack 	exprStack;
 	struct stack 	opStack;
@@ -201,10 +199,9 @@ parse(struct token_data* tokens)
 	tokenCount 		= tokens->elements;
 	exprStack.data 	= (struct var*) malloc (tokenCount * sizeof(struct var));
 	opStack.data 	= (struct var*) malloc (tokenCount * sizeof(struct var));
-	esIdx 			= &exprStack.idx;
-	osIdx 			= &opStack.idx;
 
-	esIdx = osIdx = 0;
+	size_t exprStackIdx = 0;
+	size_t opStackIdx = 0;
 
 	size_t 	i;
 	short 	opType;
@@ -213,26 +210,28 @@ parse(struct token_data* tokens)
 		printf("Token is %s.\n", tokens->array[i]);
 		if ( tokens->array[i][0] == '(' ){
 			printf("Token is open parentheses. adding to opStack.\n");
-			opStack[osIdx].type = OPERATOR;
-			opStack[osIdx].precedence = PAR;
-			opStack[osIdx].operator = "(\0";
 
-			printf("opStack[%i] added: %c. ", osIdx, opStack[osIdx].operator);
-			osIdx++;
-			printf("opStack now at %i\n", osIdx);
+			opStack.data[opStackIdx].type 			= OPERATOR;
+			opStack.data[opStackIdx].precedence 	= PAR;
+			opStack.data[opStackIdx].operator[0] 	= '(';
+			opStack.data[opStackIdx].operator[1] 	= '\0';
+
+			printf("opStack.data[%i] added: %s. ", opStackIdx, opStack.data[opStackIdx].operator);
+			opStackIdx++;
+			printf("opStack now at %i\n", opStackIdx);
 
 		} else if ( isNumber(tokens->array[i]) ){
 			printf("Token is a number %s. adding to expStack.\n", tokens->array[i]);
 
 			if (isDecimal(tokens->array[i])){
-				exprStack[esIdx].type = REAL;
-				exprStack[esIdx].real = (double) stone(tokens->array[i]);
+				exprStack.data[exprStackIdx].type = REAL;
+				exprStack.data[exprStackIdx].real = (double) stone(tokens->array[i]);
 			} else {
-				exprStack[esIdx].type = INT;
-				exprStack[esIdx].integer = (int) stone(tokens->array[i]);				
+				exprStack.data[exprStackIdx].type = INT;
+				exprStack.data[exprStackIdx].integer = (int) stone(tokens->array[i]);				
 			}
 
-			esIdx++;
+			exprStackIdx++;
 
 		} else if ((opType = (short)isOperatorOrFunctionKeyword(tokens->array[i])) != 0) {
 			printf("Token is an operator: %s. Determining operator type.\n", tokens->array[i]);
@@ -241,37 +240,42 @@ parse(struct token_data* tokens)
 			switch (opType){
 				case 1: // mul
 					printf("Operator is multiplication.\n");
-					currTok.operator = "*";
-					currTok.precedence = MUL;
-					currTok.order = LTR;
+					currTok.operator[0] = '*';
+					currTok.operator[1] = '\0';
+					currTok.precedence 	= MUL;
+					currTok.order 		= LTR;
 					break;
 				case 2: //div
 					printf("Operator is division.\n");
-					currTok.operator = "/";
-					currTok.precedence = DIV;
-					currTok.order = LTR;
+					currTok.operator[0] = '/';
+					currTok.operator[1] = '\0';
+					currTok.precedence 	= DIV;
+					currTok.order 		= LTR;
 					break;
 				case 3: //add
 					printf("Operator is addition.\n");
-					currTok.operator = "+";
-					currTok.precedence = ADD;
-					currTok.order = LTR;
+					currTok.operator[0] = '+';
+					currTok.operator[1] = '\0';
+					currTok.precedence 	= ADD;
+					currTok.order 		= LTR;
 					break;
 				case 4: //sub
 					printf("Operator is subtraction.\n");
-					currTok.operator = "-";
-					currTok.precedence = SUB;
-					currTok.order = LTR;
+					currTok.operator[0] = '-';
+					currTok.operator[1] = '\0';
+					currTok.precedence 	= SUB;
+					currTok.order 		= LTR;
 					break;
 				case 5: //function
 				{
 					printf("Operator is a function keyword.\n");
 					size_t _t = sizeof(tokens->array[i]);
 					if (_t > 254){
-						strncpy(currTok.keyword, tokens->array[i], 254);
-						currTok.keyword[255] = '\0';
+						strncpy(currTok.operator, tokens->array[i], 254);
+						currTok.operator[255] = '\0';
 					} else {
-						strncpy(currTok.keyword, tokens->array[i], _t);
+						strncpy(currTok.operator, tokens->array[i], _t);
+						currTok.operator[_t] = '\0';
 					}
 					currTok.precedence = FUN;
 					currTok.order = RTL;
@@ -283,19 +287,19 @@ parse(struct token_data* tokens)
 			/*This part is a really clumsy glue-job. Will fix later 
 			* when I can think about it for a longer time. I'm quite
 			* ashamed of the poor style, actually. Oops.*/
-			printf("comparing opStack[%i] = %c precedence: %i", osIdx-1, opStack[osIdx-1].operator, opStack[osIdx-1].precedence);
+			printf("comparing opStack.data[%i] = %c precedence: %i", opStackIdx-1, opStack.data[opStackIdx-1].operator, opStack.data[opStackIdx-1].precedence);
 			printf(" with currTok = %c precedence: %i\n", currTok.operator, currTok.precedence);
-			while (currTok.precedence < opStack[osIdx-1].precedence)
+			while (currTok.precedence < opStack.data[opStackIdx-1].precedence)
 			{
-				printf("Token %c precedence is %i -- current opStack %c precedence is %i\n", currTok.operator, currTok.precedence, opStack[osIdx-1].operator, opStack[osIdx-1].precedence);
+				printf("Token %c precedence is %i -- current opStack %c precedence is %i\n", currTok.operator, currTok.precedence, opStack.data[opStackIdx-1].operator, opStack.data[opStackIdx-1].precedence);
 
-				struct var _e1, _e2, result;
-				enum bool isDouble1, isDouble2;
-				char* 	op;
-				double 	_d1, _d2;
+				struct 		var _e1, _e2, result;
+				enum bool 	isDouble1, isDouble2;
+				char* 		op;
+				double 		_d1, _d2;
 
-				_e1 		= opStack[osIdx-1];
-				_e2 		= opStack[osIdx-2];
+				_e1 		= opStack.data[opStackIdx-1];
+				_e2 		= opStack.data[opStackIdx-2];
 				op 			= currTok.operator;
 
 				/*Get type of first operand*/
@@ -381,15 +385,15 @@ parse(struct token_data* tokens)
 					}
 				}
 
-				exprStack[esIdx++] = result;
+				exprStack.data[exprStackIdx++] = result;
 			}
 
-			opStack[osIdx++] = currTok;
+			opStack.data[opStackIdx++] = currTok;
 
 		} else if (tokens->array[i][0] == ')') {
 			double e1, e2;
-			while (opStack[osIdx].operator != "("){
-				switch (opStack[osIdx].type){
+			while (opStack.data[opStackIdx].operator != "("){
+				switch (opStack.data[opStackIdx].type){
 					case REAL:
 						e1 = 
 						break;
